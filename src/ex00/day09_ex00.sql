@@ -1,3 +1,5 @@
+DELETE FROM person WHERE id = 10;
+
 DROP TABLE IF EXISTS person_audit;
 
 CREATE TABLE person_audit (
