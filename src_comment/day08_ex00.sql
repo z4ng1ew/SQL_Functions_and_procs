@@ -1,139 +1,36 @@
-UPDATE pizzeria
-SET rating = 4.6
-WHERE name = 'Pizza Hut';
+DROP TABLE IF EXISTS person_audit;
 
+CREATE TABLE person_audit (
+    created     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    type_event  CHAR(1) NOT NULL DEFAULT 'I',
+    row_id      BIGINT NOT NULL,
+    name        VARCHAR,
+    age         INTEGER,
+    gender      VARCHAR,
+    address     VARCHAR,
+    CONSTRAINT ch_type_event CHECK (type_event IN ('I', 'U', 'D'))
+);
 
--- Session #1
+CREATE OR REPLACE FUNCTION fnc_trg_person_insert_audit()
+RETURNS TRIGGER AS
+$BODY$
+BEGIN
+    INSERT INTO person_audit(created, type_event, row_id, name, age, gender, address)
+    VALUES (CURRENT_TIMESTAMP, 'I', NEW.id, NEW.name, NEW.age, NEW.gender, NEW.address);
 
-BEGIN;
+    RETURN NULL;
+END;
+$BODY$
+LANGUAGE plpgsql;
 
-UPDATE pizzeria
-SET rating = 5
-WHERE name = 'Pizza Hut';
+DROP TRIGGER IF EXISTS trg_person_insert_audit ON person;
 
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
+CREATE TRIGGER trg_person_insert_audit
+AFTER INSERT ON person
+FOR EACH ROW
+EXECUTE FUNCTION fnc_trg_person_insert_audit();
 
-COMMIT;
+INSERT INTO person(id, name, age, gender, address)
+VALUES (10, 'Damir', 22, 'male', 'Irkutsk');
 
-
--- Session #2
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-    Блок идемпотентности:
-    Возвращаем рейтинг Pizza Hut к исходному значению 4.6,
-    чтобы эксперимент можно было повторять сколько угодно раз.
-    Этот UPDATE выполняется ВНЕ транзакции (в режиме autocommit),
-    поэтому применяется мгновенно.
-*/
-UPDATE pizzeria
-SET rating = 4.6
-WHERE name = 'Pizza Hut';
-
-
--- ============================================================
--- Session #1 (первое окно терминала с psql)
--- ============================================================
-
-/*
-    Шаг 1: Открываем транзакцию.
-    BEGIN — начало транзакции. С этого момента все наши изменения
-    "невидимы" для других сеансов до тех пор, пока мы не сделаем COMMIT.
-*/
-BEGIN;
-
-/*
-    Шаг 2: Обновляем рейтинг Pizza Hut до 5.
-    Это изменение пока существует ТОЛЬКО внутри нашей транзакции.
-    Другие подключения к БД его не видят.
-*/
-UPDATE pizzeria
-SET rating = 5
-WHERE name = 'Pizza Hut';
-
-/*
-    Шаг 3: Проверяем — мы САМИ видим своё изменение.
-    Ожидаемый результат: rating = 5.
-    Это нормально — внутри своей транзакции ты всегда видишь свои изменения.
-*/
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-/*
-    >>> ПАУЗА: Теперь переключаемся во второе окно (Session #2)
-    >>> и выполняем там первый SELECT (см. ниже).
-    >>> После этого возвращаемся сюда и делаем COMMIT.
-*/
-
-/*
-    Шаг 5: Фиксируем (публикуем) изменения.
-    COMMIT — после этой команды изменение rating = 5
-    становится видимым ВСЕМ другим сеансам.
-*/
-COMMIT;
-
-
--- ============================================================
--- Session #2 (второе окно терминала с psql)
--- ============================================================
-
-/*
-    Шаг 4: Выполняется ПОСЛЕ шага 3, но ДО шага 5 (до COMMIT).
-    Проверяем, видит ли второй сеанс изменения первого.
-    Ожидаемый результат: rating = 4.6 (старое значение!).
-    Второй сеанс НЕ видит незафиксированные изменения — это и есть
-    свойство изоляции (Isolation из ACID).
-*/
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-/*
-    Шаг 6: Выполняется ПОСЛЕ шага 5 (после COMMIT в Session #1).
-    Теперь повторяем тот же самый SELECT.
-    Ожидаемый результат: rating = 5 (новое значение).
-    COMMIT в первом сеансе "опубликовал" изменения,
-    и теперь они видны всем.
-*/
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
+SELECT * FROM person_audit;

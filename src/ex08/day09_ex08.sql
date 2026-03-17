@@ -1,28 +1,16 @@
--- Session #1
+DROP FUNCTION IF EXISTS fnc_fibonacci(INTEGER);
 
-BEGIN;
+CREATE OR REPLACE FUNCTION fnc_fibonacci(pstop INTEGER DEFAULT 10)
+RETURNS TABLE (a BIGINT) AS
+$$
+    WITH RECURSIVE fib(cur, nxt) AS (
+        SELECT 0::BIGINT AS cur, 1::BIGINT AS nxt
+        UNION ALL
+        SELECT nxt, cur + nxt FROM fib WHERE nxt < pstop
+    )
+    SELECT cur FROM fib;
+$$
+LANGUAGE SQL;
 
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 1;
-
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 2;
-
-COMMIT;
-
-
--- Session #2
-
-BEGIN;
-
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 2;
-
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 1;
-
-COMMIT;
+SELECT * FROM fnc_fibonacci(100);
+SELECT * FROM fnc_fibonacci();

@@ -1,31 +1,21 @@
-DELETE FROM pizzeria
-WHERE id = 10;
+DROP FUNCTION IF EXISTS fnc_persons_female();
+DROP FUNCTION IF EXISTS fnc_persons_male();
+DROP FUNCTION IF EXISTS fnc_persons(VARCHAR);
 
+CREATE OR REPLACE FUNCTION fnc_persons(pgender VARCHAR DEFAULT 'female')
+RETURNS TABLE (
+    id      person.id%TYPE,
+    name    person.name%TYPE,
+    age     person.age%TYPE,
+    gender  person.gender%TYPE,
+    address person.address%TYPE
+) AS
+$$
+    SELECT id, name, age, gender, address
+    FROM person
+    WHERE gender = pgender;
+$$
+LANGUAGE SQL;
 
--- Session #1
-
-BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
-SELECT SUM(rating)
-FROM pizzeria;
-
-SELECT SUM(rating)
-FROM pizzeria;
-
-COMMIT;
-
-SELECT SUM(rating)
-FROM pizzeria;
-
-
--- Session #2
-
-BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
-INSERT INTO pizzeria (id, name, rating)
-VALUES (10, 'Kazan Pizza', 5);
-
-COMMIT;
-
-SELECT SUM(rating)
-FROM pizzeria;
+SELECT * FROM fnc_persons(pgender := 'male');
+SELECT * FROM fnc_persons();

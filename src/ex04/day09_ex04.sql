@@ -1,37 +1,35 @@
-UPDATE pizzeria
-SET rating = 3.6
-WHERE name = 'Pizza Hut';
+DROP FUNCTION IF EXISTS fnc_persons_female();
+DROP FUNCTION IF EXISTS fnc_persons_male();
 
+CREATE FUNCTION fnc_persons_female()
+RETURNS TABLE (
+    id      person.id%TYPE,
+    name    person.name%TYPE,
+    age     person.age%TYPE,
+    gender  person.gender%TYPE,
+    address person.address%TYPE
+) AS
+$$
+    SELECT id, name, age, gender, address
+    FROM person
+    WHERE gender = 'female';
+$$
+LANGUAGE SQL;
 
--- Session #1
+CREATE FUNCTION fnc_persons_male()
+RETURNS TABLE (
+    id      person.id%TYPE,
+    name    person.name%TYPE,
+    age     person.age%TYPE,
+    gender  person.gender%TYPE,
+    address person.address%TYPE
+) AS
+$$
+    SELECT id, name, age, gender, address
+    FROM person
+    WHERE gender = 'male';
+$$
+LANGUAGE SQL;
 
-BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-COMMIT;
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-
--- Session #2
-
-BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
-UPDATE pizzeria
-SET rating = 3.0
-WHERE name = 'Pizza Hut';
-
-COMMIT;
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
+SELECT * FROM fnc_persons_male();
+SELECT * FROM fnc_persons_female();

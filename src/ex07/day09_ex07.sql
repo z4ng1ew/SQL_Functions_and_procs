@@ -1,28 +1,10 @@
--- Session #1
+DROP FUNCTION IF EXISTS func_minimum(VARIADIC NUMERIC[]);
 
-BEGIN;
+CREATE OR REPLACE FUNCTION func_minimum(VARIADIC arr NUMERIC[])
+RETURNS NUMERIC AS
+$$
+    SELECT MIN(val) FROM UNNEST(arr) AS nums(val);
+$$
+LANGUAGE SQL;
 
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 1;
-
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 2;
-
-COMMIT;
-
-
--- Session #2
-
-BEGIN;
-
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 2;
-
-UPDATE pizzeria
-SET rating = 4
-WHERE id = 1;
-
-COMMIT;
+SELECT func_minimum(VARIADIC arr => ARRAY[10.0, -1.0, 5.0, 4.4]);

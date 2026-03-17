@@ -1,41 +1,23 @@
-UPDATE pizzeria
-SET rating = 5
-WHERE name = 'Pizza Hut';
+CREATE OR REPLACE FUNCTION fnc_trg_person_update_audit()
+RETURNS TRIGGER AS
+$BODY$
+BEGIN
+    INSERT INTO person_audit(created, type_event, row_id, name, age, gender, address)
+    VALUES (CURRENT_TIMESTAMP, 'U', OLD.id, OLD.name, OLD.age, OLD.gender, OLD.address);
 
+    RETURN NULL;
+END;
+$BODY$
+LANGUAGE plpgsql;
 
--- Session #1
+DROP TRIGGER IF EXISTS trg_person_update_audit ON person;
 
-BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+CREATE TRIGGER trg_person_update_audit
+AFTER UPDATE ON person
+FOR EACH ROW
+EXECUTE FUNCTION fnc_trg_person_update_audit();
 
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
+UPDATE person SET name = 'Bulat' WHERE id = 10;
+UPDATE person SET name = 'Damir' WHERE id = 10;
 
-UPDATE pizzeria
-SET rating = 4
-WHERE name = 'Pizza Hut';
-
-COMMIT;
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-
--- Session #2
-
-BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
-
-UPDATE pizzeria
-SET rating = 3.6
-WHERE name = 'Pizza Hut';
-
-COMMIT;
-
-SELECT *
-FROM pizzeria
-WHERE name = 'Pizza Hut';
+SELECT * FROM person_audit;
