@@ -18,7 +18,7 @@ BEGIN
     ELSEIF (TG_OP = 'UPDATE') THEN
         INSERT INTO person_audit(created, type_event, row_id, name, age, gender, address)
         VALUES (CURRENT_TIMESTAMP, 'U', OLD.id, OLD.name, OLD.age, OLD.gender, OLD.address);
-    ELSE
+    ELSEIF (TG_OP = 'DELETE') THEN
         INSERT INTO person_audit(created, type_event, row_id, name, age, gender, address)
         VALUES (CURRENT_TIMESTAMP, 'D', OLD.id, OLD.name, OLD.age, OLD.gender, OLD.address);
     END IF;
