@@ -16,7 +16,8 @@ BEGIN
         INNER JOIN person AS pr ON pr.id = vis.person_id
     WHERE mn.price < pprice
       AND pr.name = pperson
-      AND vis.visit_date = pdate;
+      AND vis.visit_date = pdate
+    ORDER BY piz.name DESC;  
 END;
 $$
 LANGUAGE plpgsql;
