@@ -90,7 +90,7 @@ CREATE OR REPLACE FUNCTION fnc_trg_person_audit()
 RETURNS TRIGGER AS
 $BODY$
 BEGIN
-    -- TG_OP — специальная переменная PostgreSQL, доступная
+    -- TG_OP (TriGger OPeration) — специальная переменная PostgreSQL, доступная
     -- только внутри триггерных функций. Содержит строку:
     -- 'INSERT', 'UPDATE' или 'DELETE'.
 
