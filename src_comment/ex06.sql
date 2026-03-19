@@ -83,6 +83,7 @@ BEGIN
     WHERE mn.price < pprice       -- цена пиццы строго меньше указанной
       AND pr.name = pperson       -- имя посетителя совпадает с параметром
       AND vis.visit_date = pdate; -- дата визита совпадает с параметром
+    ORDER BY piz.name DESC;    -- СОРТИРОВКА ПО УБЫВАНИЮ
 END;
 $$
 -- LANGUAGE plpgsql — задание явно требует PL/pgSQL, не SQL.
