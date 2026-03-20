@@ -14,3 +14,4 @@ LANGUAGE SQL;
 
 SELECT * FROM fnc_fibonacci(100);
 SELECT * FROM fnc_fibonacci();
+SELECT * FROM fnc_fibonacci(20);
