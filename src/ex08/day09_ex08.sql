@@ -1,7 +1,7 @@
 DROP FUNCTION IF EXISTS fnc_fibonacci(INTEGER);
 
 CREATE OR REPLACE FUNCTION fnc_fibonacci(pstop INTEGER DEFAULT 10)
-RETURNS TABLE (a BIGINT) AS
+RETURNS TABLE (fib_number_column_name BIGINT) AS
 $$
     WITH RECURSIVE fib(cur, nxt) AS (
         SELECT 0::BIGINT AS cur, 1::BIGINT AS nxt
